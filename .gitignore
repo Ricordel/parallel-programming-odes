@@ -1,0 +1,9 @@
+*.o
+bin/
+dist/
+tags
+solve_ode_mpi
+bin
+.cproject
+.project
+*.dat
