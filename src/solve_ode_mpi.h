@@ -35,6 +35,8 @@ struct parallel_context {
         uint32_t nProcs;
         uint32_t firstIndex;
         uint32_t nElemsAtNode;
+        double *r_vals;
+        double *f_vals;
         double *curVals;
         double *nextVals;
 };

@@ -10,15 +10,13 @@
 
 double r(double x)
 {
-        /*return -1 / sqrt(cos(x));*/
-        return -x;
+        return -exp(-x);
 }
 
 
 double f(double x)
 {
-        /*return exp(cos(150*x));*/
-        return x;
+        return cos(10*x);
 }
 
 
@@ -34,10 +32,9 @@ double f(double x)
 void jacobiStep(struct parallel_context *pCtx, const struct ode *pOde)
 {
         for (uint32_t i = 1; i < pCtx->nElemsAtNode + 1; i++) {
-                uint32_t globalIndex = i + pCtx->firstIndex - 1; // -1 because i starts at 1.
-                double xn = pOde->step * globalIndex;
-                double num =  pCtx->curVals[i-1] + pCtx->curVals[i+1] - pOde->step * pOde->step * pOde->f(xn);
-                double denom = 2.0 - pOde->step * pOde->step * pOde->r(xn);
+                double num = pCtx->curVals[i-1] + pCtx->curVals[i+1]
+                             - pOde->step * pOde->step * pCtx->f_vals[i-1];
+                double denom = 2.0 - pOde->step * pOde->step * pCtx->r_vals[i-1];
 
                 pCtx->nextVals[i] = num / denom;
         }
@@ -60,7 +57,6 @@ static void communicate_left(struct parallel_context *pCtx)
 
         /* In the common case: there is somebody on the left, send the
          * second element of the array, and receive the first one */
-        /*debug("PROCESS %u: end to %u, receive from %u", pCtx->rank, pCtx->rank*/
         rc = MPI_Sendrecv(&pCtx->curVals[1], 1, MPI_DOUBLE, pCtx->rank - 1, 0,
                           &pCtx->curVals[0], 1, MPI_DOUBLE, pCtx->rank - 1, MPI_ANY_TAG,
                           MPI_COMM_WORLD, NULL);
@@ -164,6 +160,24 @@ static inline int first_elem_of_node(int nodeNumber, int nbNodes, uint32_t nbEle
 
 
 
+static void precompute_functions(struct parallel_context *pCtx, struct ode *pOde)
+{
+
+        pCtx->r_vals = (double *)calloc(pCtx->nElemsAtNode, sizeof(double));
+        check_mem(pCtx->r_vals);
+        pCtx->f_vals = (double *)calloc(pCtx->nElemsAtNode, sizeof(double));
+        check_mem(pCtx->f_vals);
+
+        for (uint32_t i = 0; i < pCtx->nElemsAtNode; i++) {
+                uint32_t globalIndex = pCtx->firstIndex + i;
+                double xn = pOde->step * globalIndex;
+                pCtx->r_vals[i] = pOde->r(xn);
+                pCtx->f_vals[i] = pOde->f(xn);
+        }
+}
+
+
+
 
 int main(int argc, char **argv)
 {
@@ -204,6 +218,7 @@ int main(int argc, char **argv)
         check_mem(ctx.curVals);
         ctx.nextVals = (double *) calloc(ctx.nElemsAtNode + 2, sizeof(double));
         check_mem(ctx.nextVals);
+        precompute_functions(&ctx, &ode);
 
         print_ode(&ode);
         print_context(&ctx);
