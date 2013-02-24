@@ -60,7 +60,7 @@ static void communicate_left(struct parallel_context *pCtx)
         rc = MPI_Sendrecv(&pCtx->curVals[1], 1, MPI_DOUBLE, pCtx->rank - 1, 0,
                           &pCtx->curVals[0], 1, MPI_DOUBLE, pCtx->rank - 1, MPI_ANY_TAG,
                           MPI_COMM_WORLD, NULL);
-        check(rc == MPI_SUCCESS, "Failed to sendRecv on the left at node %d", pCtx->rank);
+        check(rc == MPI_SUCCESS, "Failed to sendRecv on the left at node %u", pCtx->rank);
 }
 
 
@@ -79,7 +79,7 @@ static void communicate_right(struct parallel_context *pCtx)
         rc = MPI_Sendrecv(&pCtx->curVals[pCtx->nElemsAtNode], 1, MPI_DOUBLE, pCtx->rank + 1, 0,
                           &pCtx->curVals[pCtx->nElemsAtNode+1], 1, MPI_DOUBLE, pCtx->rank + 1, MPI_ANY_TAG,
                           MPI_COMM_WORLD, NULL);
-        check(rc == MPI_SUCCESS, "Failed to sendRecv on the right at node %d", pCtx->rank);
+        check(rc == MPI_SUCCESS, "Failed to sendRecv on the right at node %u", pCtx->rank);
 }
 
 
@@ -201,7 +201,7 @@ int main(int argc, char **argv)
         char *outFileName = NULL;
         outFileName = (char *) calloc(strlen(progOptions.outFilePrefix) + 10, sizeof(char));
         check_mem(outFileName);
-        sprintf(outFileName, "%s%u.dat", progOptions.outFilePrefix, rank);
+        sprintf(outFileName, "%s%d.dat", progOptions.outFilePrefix, rank);
         FILE *outFile = fopen(outFileName, "w");
 
 
