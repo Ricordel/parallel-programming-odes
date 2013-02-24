@@ -21,16 +21,13 @@ bin/%_mpi.o: src/%_mpi.c $(COMMON_HEADERS)
 bin/%.o: src/%.c $(COMMON_HEADERS)
 	$(CC) $(CFLAGS) $< -o $@
 
-#dist:
-	#rm -rf ./dist
-	#mkdir -p ./dist/parpro1-13-ricordel-hw1
-	#cp -r bin src *.py *.sh Makefile README dist/parpro1-13-ricordel-hw1
-	#cd dist && tar cvzf parpro1-13-ricordel-hw1.tar.gz ./parpro1-13-ricordel-hw1
-	#rm -rf ./dist/parpro1-13-ricordel-hw1
-	#a2ps --pretty-print=C --output dist/hw1-code-ricordel.ps \
-		#src/mandelbrot.h src/mandelbrot.c src/option_parser.h \
-		#src/option_parser.c src/mandelbrot_mpi.c src/mandelbrot_serial.c src/dbg.h
-	#ps2pdf dist/hw1-code-ricordel.ps dist/hw1-code-ricordel.pdf
+dist:
+	rm -rf ./dist
+	mkdir -p ./dist/parpro1-13-ricordel-hw2
+	mkdir -p ./dist/parpro1-13-ricordel-hw2/bin
+	cp -r src *.py Makefile README dist/parpro1-13-ricordel-hw2
+	cd dist && tar cvzf parpro1-13-ricordel-hw2.tar.gz ./parpro1-13-ricordel-hw2
+	rm -rf ./dist/parpro1-13-ricordel-hw2
 
 
 

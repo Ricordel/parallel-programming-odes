@@ -7,3 +7,5 @@ bin
 .cproject
 .project
 *.dat
+*.png
+make_listing.sh
