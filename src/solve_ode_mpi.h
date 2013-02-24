@@ -19,26 +19,26 @@ typedef double(*function_t)(double);
 struct ode {
         function_t r;
         function_t f;
-        uint32_t nPoints;
-        double step;
-        uint32_t nIterations;
+        uint32_t nPoints; /**< Number of discretization points of [0, 1] */
+        double step; /**< Interval between two points in the discritization */
+        uint32_t nIterations; /**< Number of Jacobi iterations */
 };
 
 
 
 /**
- * A struct that contains the details for a node: its rank and the number
- * of nodes
+ * A struct that contains computation details specific to a node.
  */
 struct parallel_context {
-        uint32_t rank;
-        uint32_t nProcs;
-        uint32_t firstIndex;
-        uint32_t nElemsAtNode;
-        double *r_vals;
-        double *f_vals;
-        double *curVals;
-        double *nextVals;
+        uint32_t rank; /**< Rank of the process */
+        uint32_t nProcs; /**< Total number of processros */
+        uint32_t firstIndex; /**< Index of the first element handeled by the node */
+        uint32_t nElemsAtNode; /**< Number of elements the node is responsible for */
+        double *r_vals; /**< Cache for the values of r on the elements the node is responsible for */
+        double *f_vals; /**< Cache for the values of f on the elements the node is responsible for */
+        double *curVals; /**< Buffer containing the current values for the elems the node is
+                              responsible for, plus one more element on each side (needed for computations) */
+        double *nextVals; /**< Temporary array containing the values currently being computed */
 };
 
 
