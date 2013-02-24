@@ -8,13 +8,13 @@
 
 
 
-double r(double x)
+static double r(double x)
 {
         return -exp(-x);
 }
 
 
-double f(double x)
+static double f(double x)
 {
         return cos(10*x);
 }
@@ -29,7 +29,7 @@ double f(double x)
  * and the index nElemsAtNode + 1 contains the value from the process
  * on the right (or the boundary condition).
  */
-void jacobiStep(struct parallel_context *pCtx, const struct ode *pOde)
+static void jacobiStep(struct parallel_context *pCtx, const struct ode *pOde)
 {
         for (uint32_t i = 1; i < pCtx->nElemsAtNode + 1; i++) {
                 double num = pCtx->curVals[i-1] + pCtx->curVals[i+1]
@@ -101,7 +101,7 @@ static void communicate_boundaries(struct parallel_context *pCtx)
 
 
 
-void solve_equation(struct parallel_context *pCtx, struct ode *pOde)
+static void solve_equation(struct parallel_context *pCtx, struct ode *pOde)
 {
         for (uint32_t i = 0; i < pOde->nIterations; i++) {
                 if (i % 10000 == 0) {
@@ -118,7 +118,7 @@ void solve_equation(struct parallel_context *pCtx, struct ode *pOde)
  * Save the partial resutls of current node in a file, with the following format:
  *                      value1 value2 ... valueN
  */
-void save_results(struct parallel_context *pCtx, FILE *outFile)
+static void save_results(struct parallel_context *pCtx, FILE *outFile)
 {
         int ret;
         for (uint32_t i = 1; i < pCtx->nElemsAtNode + 1; i++) {
