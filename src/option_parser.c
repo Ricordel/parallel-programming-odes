@@ -47,7 +47,7 @@ int parse_options(struct prog_options *pProgOptions, int argc, char **argv)
         pProgOptions->outFilePrefix = "output";
         pProgOptions->nSteps = 1000;
 
-        int ret;
+        int ret = 0;
         int opt = getopt_long(argc, argv, shortOpts, longOpts, NULL);
         while (opt != -1) {
                 switch (opt) {
