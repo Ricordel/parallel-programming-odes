@@ -13,7 +13,7 @@ dev: CFLAGS = -g -std=c99 -Wall -Wextra -O0
 dev: all
 
 solve_ode_mpi: bin/solve_ode_mpi.o bin/option_parser.o
-	$(MPILD) $(LDFLAGS) $^ -o $@
+	$(MPILD) $^ -o $@ $(LDFLAGS) 
 
 bin/%_mpi.o: src/%_mpi.c $(COMMON_HEADERS)
 	$(MPICC) $(CFLAGS) $< -o $@
