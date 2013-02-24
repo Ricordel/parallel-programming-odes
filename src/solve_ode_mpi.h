@@ -33,11 +33,14 @@ struct ode {
 struct parallel_context {
         uint32_t rank;
         uint32_t nProcs;
-        uint32_t firtIndex;
+        uint32_t firstIndex;
         uint32_t nElemsAtNode;
         double *curVals;
         double *nextVals;
 };
+
+
+
 
 
 

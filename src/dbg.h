@@ -12,6 +12,9 @@
 #include <string.h>
 #include <stdlib.h>
 
+
+#include "solve_ode_mpi.h"
+
 #ifdef NDEBUG
 #define debug(...)
 #else
@@ -47,5 +50,35 @@
                  fprintf(stderr, "\n");\
                  abort();
 
+
+
+#ifdef NDEBUG
+#define print_ode(pOde)
+#else
+#define print_ode(pOde) \
+        do { \
+                printf("ODE: r <function>\n"); \
+                printf("     f <function>\n"); \
+                printf("     nPoints:     %u\n", (pOde)->nPoints); \
+                printf("     nIterations: %u\n", (pOde)->nIterations); \
+                printf("     step:        %lf\n", (pOde)->step); \
+        } while (0)
+#endif
+
+
+
+#ifdef NDEBUG
+#define print_context(pOde)
+#else
+#define print_context(pCtx) \
+        do { \
+                printf("ctx: rank: %u\n", (pCtx)->rank); \
+                printf("     nProcs: %u\n", (pCtx)->nProcs); \
+                printf("     firstIndex: %u\n", (pCtx)->firstIndex); \
+                printf("     nElemsAtNode: %u\n", (pCtx)->nElemsAtNode); \
+        } while (0)
                 
 #endif
+
+
+#endif /* include guard __dbg_h__ */

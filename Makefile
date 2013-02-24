@@ -39,5 +39,11 @@ clean:
 	rm -f bin/*
 	rm -rf ./dist/
 
+run:
+	mpirun -np 1 ./solve_ode_mpi
 
-.PHONY: clean dist
+multi_run:
+	mpirun -np 4 ./solve_ode_mpi
+
+
+.PHONY: clean dist run multi_run

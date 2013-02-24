@@ -1,5 +1,6 @@
 #include <mpi.h>
 #include <stdint.h>
+#include <math.h>
 
 #include "dbg.h"
 #include "solve_ode_mpi.h"
@@ -9,12 +10,14 @@
 
 double r(double x)
 {
-        return x;
+        /*return -1 / sqrt(cos(x));*/
+        return -x;
 }
 
 
 double f(double x)
 {
+        /*return exp(cos(150*x));*/
         return x;
 }
 
@@ -31,7 +34,7 @@ double f(double x)
 void jacobiStep(struct parallel_context *pCtx, const struct ode *pOde)
 {
         for (uint32_t i = 1; i < pCtx->nElemsAtNode + 1; i++) {
-                uint32_t globalIndex = i + pCtx->firtIndex - 1; // -1 because i starts at 1.
+                uint32_t globalIndex = i + pCtx->firstIndex - 1; // -1 because i starts at 1.
                 double xn = pOde->step * globalIndex;
                 double num =  pCtx->curVals[i-1] + pCtx->curVals[i+1] - pOde->step * pOde->step * pOde->f(xn);
                 double denom = 2.0 - pOde->step * pOde->step * pOde->r(xn);
@@ -57,8 +60,9 @@ static void communicate_left(struct parallel_context *pCtx)
 
         /* In the common case: there is somebody on the left, send the
          * second element of the array, and receive the first one */
-        rc = MPI_Sendrecv(&pCtx->curVals[1], 1, MPI_DOUBLE, pCtx->rank + 1, 0,
-                          &pCtx->curVals[0], 1, MPI_DOUBLE, pCtx->rank, MPI_ANY_TAG,
+        /*debug("PROCESS %u: end to %u, receive from %u", pCtx->rank, pCtx->rank*/
+        rc = MPI_Sendrecv(&pCtx->curVals[1], 1, MPI_DOUBLE, pCtx->rank - 1, 0,
+                          &pCtx->curVals[0], 1, MPI_DOUBLE, pCtx->rank - 1, MPI_ANY_TAG,
                           MPI_COMM_WORLD, NULL);
         check(rc == MPI_SUCCESS, "Failed to sendRecv on the left at node %d", pCtx->rank);
 }
@@ -77,7 +81,7 @@ static void communicate_right(struct parallel_context *pCtx)
         /* In the common case: there is somebody on the right, send the
          * before last element of the array, and receive the last one */
         rc = MPI_Sendrecv(&pCtx->curVals[pCtx->nElemsAtNode], 1, MPI_DOUBLE, pCtx->rank + 1, 0,
-                          &pCtx->curVals[pCtx->nElemsAtNode+1], 1, MPI_DOUBLE, pCtx->rank, MPI_ANY_TAG,
+                          &pCtx->curVals[pCtx->nElemsAtNode+1], 1, MPI_DOUBLE, pCtx->rank + 1, MPI_ANY_TAG,
                           MPI_COMM_WORLD, NULL);
         check(rc == MPI_SUCCESS, "Failed to sendRecv on the right at node %d", pCtx->rank);
 }
@@ -104,6 +108,9 @@ static void communicate_boundaries(struct parallel_context *pCtx)
 void solve_equation(struct parallel_context *pCtx, struct ode *pOde)
 {
         for (uint32_t i = 0; i < pOde->nIterations; i++) {
+                if (i % 10000 == 0) {
+                        printf("Iteration %u\n", i);
+                }
                 jacobiStep(pCtx, pOde);
                 communicate_boundaries(pCtx);
         }
@@ -158,12 +165,12 @@ static inline int first_elem_of_node(int nodeNumber, int nbNodes, uint32_t nbEle
 
 
 
-int main(int argc, char *argv[])
+int main(int argc, char **argv)
 {
         int rc;
         /* First of all, start MPI */
         rc = MPI_Init(&argc, &argv);
-        check (rc = MPI_SUCCESS, "Failed to init MPI");
+        check (rc == MPI_SUCCESS, "Failed to init MPI");
 
         struct prog_options progOptions;
         parse_options(&progOptions, argc, argv);
@@ -185,27 +192,30 @@ int main(int argc, char *argv[])
 
 
         /* Create the contexts */
-        double step = (double)1 / (double)progOptions.nIterations;
+        double step = (double)1 / (double)(progOptions.nSteps + 1);
         struct ode ode = { r, f, 1000, step, progOptions.nIterations };
 
         struct parallel_context ctx;
         ctx.rank = rank;
         ctx.nProcs = nProcs;
-        ctx.firtIndex = first_elem_of_node(rank, nProcs, progOptions.nSteps);
+        ctx.firstIndex = first_elem_of_node(rank, nProcs, progOptions.nSteps);
         ctx.nElemsAtNode = elems_at_node(rank, nProcs, progOptions.nSteps);
         ctx.curVals = (double *) calloc(ctx.nElemsAtNode + 2, sizeof(double));
         check_mem(ctx.curVals);
         ctx.nextVals = (double *) calloc(ctx.nElemsAtNode + 2, sizeof(double));
         check_mem(ctx.nextVals);
 
+        print_ode(&ode);
+        print_context(&ctx);
 
         /***** That's it, we can now solve our equation, and save the result *****/
         solve_equation(&ctx, &ode);
         save_results(&ctx, outFile);
 
+
+        /***** And clean the context ******/
+        rc = MPI_Finalize();
+        check (rc == MPI_SUCCESS, "Failed to finalize");
+
         return 0;
 }
-
-
-
-
