@@ -43,9 +43,6 @@ struct parallel_context {
 
 
 
-
-
-
 /**
  * This type represents a color, either red or black, for red/black communication.
  */
