@@ -1,3 +1,14 @@
+Functionnality
+==============
+
+This program numerically solves differential equations of the form
+
+.. math::
+
+    u''(x) + r(x)u(x) = f(x)
+
+on :math:`(0, 1)` with the constraints :math:`u(0) = 0, u(1) = 0` using MPI.
+
 Compile and run
 ===============
 
