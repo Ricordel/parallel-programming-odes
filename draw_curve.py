@@ -12,7 +12,7 @@ def get_values(filename):
     return vals
 
 def print_vals(ys):
-    xs = numpy.linspace(0, 1.0, 1002)
+    xs = numpy.linspace(0, 1.0, len(ys))
     plot.plot(xs, ys)
     plot.show()
 
@@ -25,6 +25,7 @@ if __name__ == "__main__":
     # and draw the result.
     if len(sys.argv) != 3:
         print("Usage: %s <file prefix> <number of files>" % sys.argv[0])
+        sys.exit(1)
     file_prefix = sys.argv[1]
     nb_files = int(sys.argv[2])
 
