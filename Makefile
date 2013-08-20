@@ -7,6 +7,8 @@ LDFLAGS = -lm
 
 COMMON_HEADERS = src/dbg.h src/option_parser.h src/solve_ode_mpi.h
 
+SIDE_EFFECTS := $(shell mkdir -p bin)
+
 all: solve_ode_mpi
 
 dev: CFLAGS = -g -std=c99 -Wall -Wextra -O0
@@ -33,7 +35,7 @@ dist:
 
 clean:
 	rm -f solve_ode_mpi
-	rm -f bin/*
+	rm -rf bin/
 	rm -rf ./dist/
 
 run:
